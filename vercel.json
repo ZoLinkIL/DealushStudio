@@ -1,4 +1,9 @@
 {
-  "crons": [{ "path": "/api/cron/morning", "schedule": "0 5 * * *" }],
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude)inbox' ':(exclude).github'"
+  "crons": [
+    {
+      "path": "/api/cron/morning",
+      "schedule": "0 5 * * *"
+    }
+  ],
+  "ignoreCommand": "if git rev-parse --verify HEAD^ >/dev/null 2>&1; then git diff --quiet HEAD^ HEAD -- . ':(exclude)inbox' ':(exclude).github'; else exit 1; fi"
 }
