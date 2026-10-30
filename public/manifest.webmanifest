@@ -1,0 +1,22 @@
+{
+  "name": "סטודיו דילוש",
+  "short_name": "סטודיו",
+  "description": "ניהול התוכן של דילוש",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F4F7FD",
+  "theme_color": "#1D4ED8",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "פריט חדש", "url": "/item/new" },
+    { "name": "לוח", "url": "/calendar" }
+  ]
+}

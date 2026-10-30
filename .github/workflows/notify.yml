@@ -1,0 +1,26 @@
+# Sends a Telegram message to your personal bot every time the studio code is updated.
+name: Notify Telegram on update
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["inbox/**"]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send update to Telegram
+        env:
+          TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          COMMITS: ${{ toJson(github.event.commits) }}
+          COMPARE: ${{ github.event.compare }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then echo "Telegram secrets not set, skipping"; exit 0; fi
+          LINES=$(echo "$COMMITS" | jq -r '.[] | "• " + (.message | split("\n")[0])' | head -10)
+          TEXT=$(printf "🛠 עדכון בסטודיו דילוש\n\n%s\n\nהגרסה החדשה עולה עכשיו ל-Vercel (כדקה)." "$LINES")
+          curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${CHAT}" \
+            --data-urlencode "text=${TEXT}" \
+            --data-urlencode "disable_web_page_preview=true" > /dev/null
