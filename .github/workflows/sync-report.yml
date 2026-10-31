@@ -1,0 +1,35 @@
+# Forwards the round summary from the Claude <-> Grok daily sync issue to Ori's Telegram.
+# Whoever posts last in a round writes a comment starting with "📋" on the
+# "[to-grok] Daily sync YYYY-MM-DD" issue; this workflow sends that comment to Telegram.
+name: Sync report to Telegram
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  report:
+    if: >-
+      startsWith(github.event.issue.title, '[to-grok] Daily sync') &&
+      startsWith(github.event.comment.body, '📋') &&
+      (contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association) ||
+       github.event.comment.user.type == 'Bot')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send summary to Telegram
+        env:
+          TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          BODY: ${{ github.event.comment.body }}
+          LINK: ${{ github.event.comment.html_url }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then echo "Telegram secrets not set, skipping"; exit 0; fi
+          # Telegram caps messages at 4096 chars; keep room for the link.
+          export LC_ALL=C.UTF-8
+          TRIMMED="${BODY:0:3700}"
+          if [ ${#BODY} -gt 3700 ]; then TRIMMED="$TRIMMED"$'\n…(המשך בקישור)'; fi
+          TEXT=$(printf "%s\n\n🔗 %s" "$TRIMMED" "$LINK")
+          curl -sS -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${CHAT}" \
+            --data-urlencode "text=${TEXT}" \
+            --data-urlencode "disable_web_page_preview=true" > /dev/null
